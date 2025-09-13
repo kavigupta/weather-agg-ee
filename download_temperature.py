@@ -29,6 +29,48 @@ def initialize_earth_engine():
             print("Please authenticate first by running: earthengine authenticate")
         raise
 
+def create_temperature_image():
+    """Create the Earth Engine temperature image object."""
+    # Initialize Earth Engine
+    initialize_earth_engine()
+
+    # Define the date and time (2019-05-02 at 2pm UTC)
+    target_date = '2019-05-02'
+    target_time = '14:00:00'  # 2pm in 24-hour format
+
+    # Create datetime object for filtering
+    start_time = f"{target_date}T{target_time}"
+    end_time = f"{target_date}T14:00:01"  # 1 second later for exact time
+
+    print(f"Creating temperature image for {start_time}")
+
+    # Load ERA5-Land hourly dataset
+    # ERA5-Land provides temperature at 2m above ground
+    era5_land = ee.ImageCollection('ECMWF/ERA5_LAND/HOURLY')
+
+    # Filter by date and time
+    temperature_collection = era5_land.filterDate(start_time, end_time)
+
+    # Get the first (and only) image from the filtered collection
+    temperature_image = temperature_collection.first()
+
+    if temperature_image is None:
+        raise ValueError(f"No temperature data found for {start_time}")
+
+    # Select the temperature band (2m temperature in Kelvin)
+    # Convert from Kelvin to Celsius
+    temperature_celsius = temperature_image.select('temperature_2m').subtract(273.15)
+
+    # Rename the band for clarity
+    temperature_celsius = temperature_celsius.rename('temperature_2m_celsius')
+
+    # Get the image properties
+    image_info = temperature_image.getInfo()
+    print(f"Image ID: {image_info.get('id', 'Unknown')}")
+    print(f"Image bands: {list(image_info.get('bands', []))}")
+
+    return temperature_celsius
+
 def download_temperature_quadrant(quadrant_name, bounds, temperature_celsius):
     """Download temperature data for a specific quadrant."""
     print(f"Downloading {quadrant_name}...")
@@ -83,43 +125,8 @@ def merge_quadrants(quadrant_data):
 def download_temperature_data():
     """Download high temperature data for 2019-05-02 at 2pm UTC in 4 quadrants and merge."""
 
-    # Initialize Earth Engine
-    initialize_earth_engine()
-
-    # Define the date and time (2019-05-02 at 2pm UTC)
-    target_date = '2019-05-02'
-    target_time = '14:00:00'  # 2pm in 24-hour format
-
-    # Create datetime object for filtering
-    start_time = f"{target_date}T{target_time}"
-    end_time = f"{target_date}T14:00:01"  # 1 second later for exact time
-
-    print(f"Downloading temperature data for {start_time}")
-
-    # Load ERA5-Land hourly dataset
-    # ERA5-Land provides temperature at 2m above ground
-    era5_land = ee.ImageCollection('ECMWF/ERA5_LAND/HOURLY')
-
-    # Filter by date and time
-    temperature_collection = era5_land.filterDate(start_time, end_time)
-
-    # Get the first (and only) image from the filtered collection
-    temperature_image = temperature_collection.first()
-
-    if temperature_image is None:
-        raise ValueError(f"No temperature data found for {start_time}")
-
-    # Select the temperature band (2m temperature in Kelvin)
-    # Convert from Kelvin to Celsius
-    temperature_celsius = temperature_image.select('temperature_2m').subtract(273.15)
-
-    # Rename the band for clarity
-    temperature_celsius = temperature_celsius.rename('temperature_2m_celsius')
-
-    # Get the image properties
-    image_info = temperature_image.getInfo()
-    print(f"Image ID: {image_info.get('id', 'Unknown')}")
-    print(f"Image bands: {list(image_info.get('bands', []))}")
+    # Create the Earth Engine temperature image
+    temperature_celsius = create_temperature_image()
 
     # Define 4 quadrants to stay below pixel limits
     # Global bounds: [-180, -90, 180, 90]
