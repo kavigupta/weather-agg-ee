@@ -8,47 +8,111 @@ from download import download_ee_image
 import ee
 
 
-def create_temperature_image():
-    """Create the Earth Engine temperature image object."""
+def create_temperature_image(start_date="2019-01-01", end_date="2019-01-31"):
+    """Create the Earth Engine temperature image object with mean high temperature over time period.
+
+    Args:
+        start_date (str): Start date in YYYY-MM-DD format
+        end_date (str): End date in YYYY-MM-DD format
+
+    Returns:
+        ee.Image: Mean high temperature image in Celsius
+    """
     # Initialize Earth Engine
     ee.Initialize()
 
-    # Define the date and time (2019-05-02 at 2pm UTC)
-    target_date = "2019-01-02"
-    target_time = "14:00:00"  # 2pm in 24-hour format
-
-    # Create datetime object for filtering
-    start_time = f"{target_date}T{target_time}"
-    end_time = f"{target_date}T14:00:01"  # 1 second later for exact time
-
-    print(f"Creating temperature image for {start_time}")
+    print(f"Creating mean high temperature image from {start_date} to {end_date}")
 
     # Load ERA5-Land hourly dataset
     # ERA5-Land provides temperature at 2m above ground
     era5_land = ee.ImageCollection("ECMWF/ERA5_LAND/HOURLY")
 
-    # Filter by date and time
-    temperature_collection = era5_land.filterDate(start_time, end_time)
+    # Filter by date range
+    temperature_collection = era5_land.filterDate(start_date, end_date)
 
-    # Get the first (and only) image from the filtered collection
-    temperature_image = temperature_collection.first()
+    # Check if we have data for the period
+    collection_size = temperature_collection.size().getInfo()
+    if collection_size == 0:
+        raise ValueError(
+            f"No temperature data found for period {start_date} to {end_date}"
+        )
 
-    if temperature_image is None:
-        raise ValueError(f"No temperature data found for {start_time}")
+    print(f"Found {collection_size} hourly images in the collection")
 
-    # Select the temperature band (2m temperature in Kelvin)
-    # Convert from Kelvin to Celsius
-    temperature_celsius = temperature_image.select("temperature_2m").subtract(273.15)
+    # Select the temperature band (2m temperature in Kelvin) and convert to Celsius
+    temperature_celsius_collection = temperature_collection.select(
+        "temperature_2m"
+    ).map(lambda image: image.subtract(273.15))
+
+    # Calculate daily maximum temperatures properly
+    # Get list of unique dates in the collection
+    def get_daily_max_for_date(date_str):
+        """Get maximum temperature for a specific date."""
+        day_collection = temperature_celsius_collection.filter(
+            ee.Filter.date(ee.Date(date_str), ee.Date(date_str).advance(1, "day"))
+        )
+        return day_collection.max()
+
+    # Get list of dates in the range
+    start_date_ee = ee.Date(start_date)
+    end_date_ee = ee.Date(end_date)
+    num_days = end_date_ee.difference(start_date_ee, "day").getInfo()
+
+    # Create list of dates
+    date_list = []
+    for i in range(int(num_days) + 1):
+        date = start_date_ee.advance(i, "day")
+        date_list.append(date.format("YYYY-MM-dd").getInfo())
+
+    # Get daily maximum temperatures
+    daily_max_images = []
+    for date_str in date_list:
+        day_max = get_daily_max_for_date(date_str)
+        # Check if the day has data by checking if it has bands
+        day_info = day_max.getInfo()
+        if day_info.get("bands"):  # Only add if the image has bands
+            daily_max_images.append(day_max)
+            print(f"Added daily max for {date_str}")
+        else:
+            print(f"No data for {date_str}")
+
+    if not daily_max_images:
+        raise ValueError(
+            "No daily maximum temperature data found for any day in the period"
+        )
+
+    # Create image collection from daily maximums
+    daily_max_collection = ee.ImageCollection.fromImages(daily_max_images)
+
+    # Calculate mean of daily maximum temperatures over the period
+    mean_daily_max_temp = daily_max_collection.mean()
 
     # Rename the band for clarity
-    temperature_celsius = temperature_celsius.rename("temperature_2m_celsius")
+    mean_daily_max_temp = mean_daily_max_temp.rename(
+        "mean_daily_max_temperature_celsius"
+    )
 
-    # Get the image properties
-    image_info = temperature_image.getInfo()
-    print(f"Image ID: {image_info.get('id', 'Unknown')}")
-    print(f"Image bands: {list(image_info.get('bands', []))}")
+    print(
+        f"Calculated mean daily maximum temperature over the period {start_date} to {end_date}"
+    )
 
-    return temperature_celsius
+    return mean_daily_max_temp
+
 
 if __name__ == "__main__":
-    download_ee_image(create_temperature_image(), "temp.npy")
+    # Example: Get mean daily max temperature for January 2019
+    temperature_image = create_temperature_image("2019-01-01", "2019-01-31")
+
+    # Debug: Check the image properties
+    image_info = temperature_image.getInfo()
+    print(f"Image info: {image_info}")
+    print(f"Image bands: {list(image_info.get('bands', []))}")
+
+    # Download with configurable tile size (45° x 45° tiles = 8 tiles total)
+    download_ee_image(
+        temperature_image,
+        "temp.npy",
+        "mean_daily_max_temperature_celsius",
+        resolution=0.25,
+        degree_size=45,
+    )
