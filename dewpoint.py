@@ -9,7 +9,7 @@ from constants import date_start_str, date_end_str
 from permacache import permacache
 
 
-@permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date")
+@permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date", multiprocess_safe=True)
 def high_dewpoint_for_date(date_str):
 
     ee.Initialize()
@@ -23,7 +23,7 @@ def high_dewpoint_for_date(date_str):
     )
 
 
-def sampled_dewpoints(num_samples):
+def sampled_dewpoints(num_samples, quiet=True):
     start_date = datetime.strptime(date_start_str, "%Y-%m-%d").date()
     num_dates = (
         datetime.strptime(date_end_str, "%Y-%m-%d").date() - start_date
@@ -34,7 +34,8 @@ def sampled_dewpoints(num_samples):
     for i in range(num_samples):
         date = start_date + timedelta(days=int(shuffled_dates[i]))
         date_str = date.strftime("%Y-%m-%d")
-        print(f"Processing date #{i} of {num_samples}: {date_str}")
+        if not quiet:
+            print(f"Processing date #{i} of {num_samples}: {date_str}")
         results.append(high_dewpoint_for_date(date_str))
 
     return np.array(results)
@@ -50,4 +51,4 @@ def sampled_dewpoints(num_samples):
 
 
 if __name__ == "__main__":
-    print(sampled_dewpoints(1000))
+    print(sampled_dewpoints(1000, quiet=False))
