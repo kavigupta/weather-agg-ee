@@ -11,7 +11,6 @@ from permacache import permacache
 
 @permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date", multiprocess_safe=True)
 def high_dewpoint_for_date(date_str):
-
     ee.Initialize()
     date = ee.Date(date_str)
     era5_land = ee.ImageCollection("ECMWF/ERA5_LAND/HOURLY")

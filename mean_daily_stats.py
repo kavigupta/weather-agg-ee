@@ -12,6 +12,7 @@ from download import download_ee_image
 #     data = data.filter(ee.Filter.eq("maximum_2m_air_temperature", 90))
 #     return data.mean()
 
+
 @permacache("weather-agg-ee/mean_daily_stats/mean_daily_stats_for_segment")
 def mean_daily_stats_for_segment(band, filter_spec):
     ee.Initialize()
@@ -21,17 +22,12 @@ def mean_daily_stats_for_segment(band, filter_spec):
     if filter_spec is not None:
         filter_spec = filter_spec.copy()
         assert filter_spec.pop("type") == "calendarRange"
-        data = data.filter(
-            ee.Filter.calendarRange(**filter_spec)
-        )
+        data = data.filter(ee.Filter.calendarRange(**filter_spec))
 
     mean_temp_for_segment = data.mean()
 
     return download_ee_image(
-        mean_temp_for_segment,
-        band,
-        resolution=0.25,
-        degree_size=60
+        mean_temp_for_segment, band, resolution=0.25, degree_size=60
     )
 
 
@@ -65,6 +61,7 @@ def astronomical_seasonal_summary(band):
 
     return for_breaks(band, year_zero, breaks)
 
+
 def month_seasonal_summary(band):
     year_zero = datetime(2020, 12, 31)
     # winter = DJF, spring = MAM, summer = JJA, fall = SON
@@ -77,12 +74,13 @@ def month_seasonal_summary(band):
     ]
     return for_breaks(band, year_zero, month_breaks)
 
-def populate_caches():
 
+def populate_caches():
     for band in "minimum_2m_air_temperature", "maximum_2m_air_temperature":
         mean_daily_stats_for_segment(band, None)
         astronomical_seasonal_summary(band)
         month_seasonal_summary(band)
+
 
 if __name__ == "__main__":
     populate_caches()

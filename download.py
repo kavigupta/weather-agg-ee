@@ -122,9 +122,16 @@ def merge_quadrants_8(quadrant_data):
     print("Merging 8 quadrants...")
 
     # Quadrant order: NW, N, NE, NE2, SW, S, SE, SE2
-    nw_data, n_data, ne_data, ne2_data, sw_data, s_data, se_data, se2_data = (
-        quadrant_data
-    )
+    (
+        nw_data,
+        n_data,
+        ne_data,
+        ne2_data,
+        sw_data,
+        s_data,
+        se_data,
+        se2_data,
+    ) = quadrant_data
 
     # Get dimensions
     nw_height = len(nw_data)
