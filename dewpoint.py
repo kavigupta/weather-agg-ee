@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta
 
 import ee
-import numpy as np
 from permacache import permacache
 
-from constants import date_end_str, date_start_str
 from download import download_ee_image
+from sample import sampled_values
 
 
 @permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date", multiprocess_safe=True)
@@ -20,24 +19,6 @@ def high_dewpoint_for_date(date_str):
         day_collection.max(), "dewpoint_temperature_2m", resolution=0.25, degree_size=60
     )
 
-
-def sampled_dewpoints(num_samples, quiet=True):
-    start_date = datetime.strptime(date_start_str, "%Y-%m-%d").date()
-    num_dates = (
-        datetime.strptime(date_end_str, "%Y-%m-%d").date() - start_date
-    ).days + 1
-    shuffled_dates = np.random.RandomState(0).permutation(num_dates)
-
-    results = []
-    for i in range(num_samples):
-        date = start_date + timedelta(days=int(shuffled_dates[i]))
-        date_str = date.strftime("%Y-%m-%d")
-        if not quiet:
-            print(f"Processing date #{i} of {num_samples}: {date_str}")
-        results.append(high_dewpoint_for_date(date_str))
-
-    return np.array(results)
-
     # results = []
     # for i in range(0, num_samples, chunk_size):
     #     print(f"Processing chunk {i} of {num_samples}")
@@ -49,4 +30,4 @@ def sampled_dewpoints(num_samples, quiet=True):
 
 
 if __name__ == "__main__":
-    print(sampled_dewpoints(2000, quiet=False))
+    print(sampled_values(high_dewpoint_for_date, 2000, quiet=False))
