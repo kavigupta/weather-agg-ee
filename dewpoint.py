@@ -50,4 +50,4 @@ def sampled_dewpoints(num_samples, quiet=True):
 
 
 if __name__ == "__main__":
-    print(sampled_dewpoints(1000, quiet=False))
+    print(sampled_dewpoints(2000, quiet=False))
