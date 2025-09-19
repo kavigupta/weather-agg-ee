@@ -4,8 +4,9 @@ Download high temperature data from Google Earth Engine for 2019-05-02 at 2pm
 and export as TIFF file.
 """
 
-from download import download_ee_image
 import ee
+
+from download import download_ee_image
 
 
 def create_temperature_image(start_date="2019-01-01", end_date="2019-01-31"):
