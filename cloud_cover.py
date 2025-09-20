@@ -19,6 +19,7 @@ from download import download_ee_image
     "weather-agg-ee/cloud_cover/cloud_cover_for_segment",
 )
 def cloud_cover_for_segment(date_start_str, date_end_str):
+    print(f"Cloud cover {date_start_str} to {date_end_str}")
     ee.Initialize()
     era5 = ee.ImageCollection("ECMWF/ERA5/HOURLY")
     day = era5.filter(
@@ -37,9 +38,11 @@ def cloud_cover_for_segment(date_start_str, date_end_str):
     )
     return download_ee_image(day.mean(), "sun", resolution=0.25, degree_size=45)
 
-
+@permacache(
+    "weather-agg-ee/cloud_cover/cloud_cover_segment_overall",
+)
 def compute_cloud_segment_overall():
-    dates = ["1990-01-01", "2000-01-01", "2010-01-01", "2020-01-01"]
+    dates = [f"{year}-01-01" for year in range(1990, 2021)]
     assert dates[0] == date_start_str and decrement(dates[-1]) == date_end_str
     results = 0
     total_weight = 0
