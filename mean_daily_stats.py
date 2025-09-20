@@ -134,14 +134,14 @@ def month_seasonal_summary(band):
 
 
 def temperature_histogram(band):
-    return [
-        mean_daily_stats_for_segment(
+    return {
+        temp: mean_daily_stats_for_segment(
             band,
             None,
             "$x = $x > 273.15 + 5/9 * ($TEMP - 32)".replace("$TEMP", str(temp)),
         )
         for temp in range(-40, 150, 10)
-    ]
+    }
 
 
 def populate_caches():
@@ -151,6 +151,22 @@ def populate_caches():
         month_seasonal_summary(band)
         temperature_histogram(band)
         statistics_by_month(band)
+
+
+def temperature_stats_dict():
+    stats = {}
+    for band in "maximum_2m_air_temperature", "minimum_2m_air_temperature":
+        short = band[:3] + "daily_temp"
+        stats[short] = mean_daily_stats_for_segment(band, None, None), "K"
+        for t, value in enumerate(astronomical_seasonal_summary(band), 1):
+            stats[short + "_seasonal_astro_" + str(t)] = value, "K"
+        for t, value in enumerate(month_seasonal_summary(band), 1):
+            stats[short + "_seasonal_month_" + str(t)] = value, "K"
+        for t, value in enumerate(statistics_by_month(band), 1):
+            stats[f"{short}_month_{t:02d}"] = value, "K"
+        for t, value in temperature_histogram(band).items():
+            stats[f"{short}_gt_{t:+04d}"] = value, "%"
+    return stats
 
 
 if __name__ == "__main__":
