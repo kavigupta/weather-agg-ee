@@ -30,4 +30,5 @@ def high_dewpoint_for_date(date_str):
 
 
 if __name__ == "__main__":
-    print(sampled_values(high_dewpoint_for_date, 2000, quiet=False))
+    for _ in sampled_values(high_dewpoint_for_date, 2000, quiet=False):
+        pass
