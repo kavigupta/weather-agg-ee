@@ -41,6 +41,11 @@ def save_image(statname, stat, unit):
     low, hi = {"K": (273.15 - 10, 273.15 + 40), "%": (0, 1)}[unit]
     stat = (stat - low) / (hi - low)
     img = Image.fromarray((mpl.cm.viridis(stat) * 255).astype(np.uint8))
+    draw_title(statname, img)
+    img.save(f"{images_folder}/{statname}.png")
+
+
+def draw_title(statname, img):
     draw = ImageDraw.Draw(img)
     # make the text large and centered at the top
     font = ImageFont.truetype("Arial.ttf", 48)
@@ -52,7 +57,6 @@ def save_image(statname, stat, unit):
         fill=(255, 255, 255, 255),
         font=font,
     )
-    img.save(f"{images_folder}/{statname}.png")
 
 
 def run_ffmpeg_monthly():
