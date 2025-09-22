@@ -44,7 +44,7 @@ def download_point(point, ee_data: ee.Image, band_name: str, resolution=0.25):
 
 def download_quadrant(bounds, ee_data: ee.Image, band_name: str, resolution=0.25):
     """Download temperature data for a specific quadrant."""
-    print(f"Downloading {bounds}...")
+    # print(f"Downloading {bounds}...")
 
     # Create export region for this quadrant
     export_region = ee.Geometry.Rectangle(bounds)
@@ -77,9 +77,9 @@ def download_quadrant(bounds, ee_data: ee.Image, band_name: str, resolution=0.25
                 f"Could not retrieve temperature data for {bounds}. Available bands: {list(image_info.keys())}, Properties: {list(properties.keys())}"
             )
 
-    print(
-        f"Downloaded {bounds} shape: {len(quadrant_temp_data)} x {len(quadrant_temp_data[0])}"
-    )
+    # print(
+    #     f"Downloaded {bounds} shape: {len(quadrant_temp_data)} x {len(quadrant_temp_data[0])}"
+    # )
     return quadrant_temp_data
 
 
