@@ -1,5 +1,6 @@
 import ee
 
+import numpy as np
 from permacache import permacache
 
 from download import download_ee_image
