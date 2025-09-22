@@ -14,10 +14,11 @@ rain_snow_expressions = {
 
 
 @permacache(
-    "weather-agg-ee/precipitation/compute_precipitation_for_range", multiprocess_safe=True
+    "weather-agg-ee/precipitation/compute_precipitation_for_month",
+    multiprocess_safe=True,
 )
-def compute_precipitation_for_range(start_date, end_date, rain_or_snow):
-    print(f"Precipitation {rain_or_snow} {start_date} to {end_date}")
+def compute_precipitation_for_month(rain_or_snow, start_date, end_date):
+    print(f"Precipitation {rain_or_snow} from {start_date} to {end_date}")
     ee.Initialize()
     era5 = ee.ImageCollection("ECMWF/ERA5/HOURLY")
     collection = era5.filter(ee.Filter.date(ee.Date(start_date), ee.Date(end_date)))
@@ -35,15 +36,28 @@ def compute_precipitation_for_range(start_date, end_date, rain_or_snow):
     )
 
 
-def compute_precipitation():
-    dates = [f"{year}-01-01" for year in range(1990, 2021)]
-    assert dates[0] == date_start_str and decrement(dates[-1]) == date_end_str
-    snow_total = 0
-    rain_total = 0
+def compute_precipitation(date_end=date_end_str):
+    dates = [
+        f"{year}-{month:02d}-01"
+        for year in range(1990, 2021, 1)
+        for month in range(1, 13)
+    ]
+    dates = [
+        date for date in dates if date >= date_start_str and decrement(date) <= date_end
+    ]
+    assert dates[0] == date_start_str and decrement(dates[-1]) == date_end, (
+        dates[-1],
+        date_end,
+    )
+    snow_total = [0] * 12
+    rain_total = [0] * 12
     for start, end in zip(dates[:-1], dates[1:]):
-        snow_total += compute_precipitation_for_range(start, end, "snow")
-        rain_total += compute_precipitation_for_range(start, end, "rain")
-    return {"snow": snow_total, "rain": rain_total}
+        _, month, _ = start.split("-")
+        month_idx = int(month) - 1
+        snow_total[month_idx] += compute_precipitation_for_month("snow", start, end)
+        rain_total[month_idx] += compute_precipitation_for_month("rain", start, end)
+    return {"snow": np.array(snow_total), "rain": np.array(rain_total)}
+
 
 if __name__ == "__main__":
     compute_precipitation()
