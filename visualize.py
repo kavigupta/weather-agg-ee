@@ -31,8 +31,8 @@ def precipitation_plot(snow, rain):
     return Image.fromarray(color)
 
 
-def precipitation_by_month_video(end_date):
-    precip = compute_precipitation(end_date)
+def precipitation_by_month_video(**kwargs):
+    precip = compute_precipitation(**kwargs)
     snow = precip["snow"] / np.percentile(precip["snow"], 95)
     rain = precip["rain"] / np.percentile(precip["rain"], 95)
     shutil.rmtree("precipitation_video", ignore_errors=True)
