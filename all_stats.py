@@ -7,6 +7,7 @@ import tqdm
 
 from cloud_cover import compute_cloud_segment_overall
 from mean_daily_stats import temperature_stats_dict
+from precipitation import precipitation_stats_dict
 from windspeed import high_wind_days
 
 
@@ -18,6 +19,7 @@ def all_stats():
     return {
         "sunniness": (compute_cloud_segment_overall(), "%"),
         "windspeed_over_10mph": (high_wind_days(), "%"),
+        **precipitation_stats_dict(),
         **temperature_stats_dict(),
     }
 
@@ -38,7 +40,11 @@ def save_image(statname, stat, unit):
         os.makedirs(images_folder, exist_ok=True)
     except FileExistsError:
         pass
-    low, hi = {"K": (273.15 - 10, 273.15 + 40), "%": (0, 1)}[unit]
+    low, hi = {
+        "K": (273.15 - 10, 273.15 + 40),
+        "%": (0, 1),
+        "m": (0, np.percentile(stat, 95)),
+    }[unit]
     stat = (stat - low) / (hi - low)
     img = Image.fromarray((mpl.cm.viridis(stat) * 255).astype(np.uint8))
     draw_title(statname, img)

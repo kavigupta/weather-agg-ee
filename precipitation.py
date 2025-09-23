@@ -80,6 +80,20 @@ def compute_precipitation_for_month_for_parallel(rain_or_snow, start_date, end_d
     return compute_precipitation_for_month(rain_or_snow, start_date, end_date)
 
 
+def precipitation_stats_dict():
+    precip = compute_precipitation()
+    delta = datetime.strptime(date_end_str, "%Y-%m-%d") - datetime.strptime(
+        date_start_str, "%Y-%m-%d"
+    )
+    years = delta.days / 365.2425
+    results = {
+        f"precipitation_{ros}_{mo + 1:02d}": (precip[ros][mo] / years, "m")
+        for ros in ["rain", "snow"]
+        for mo in range(12)
+    }
+    return results
+
+
 def populate_caches():
     parameters = [
         (ros, start, end)
