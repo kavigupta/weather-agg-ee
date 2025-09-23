@@ -42,7 +42,9 @@ def precipitation_by_month_video(**kwargs):
         pass
     for mo_idx in range(12):
         img = precipitation_plot(snow[mo_idx], rain[mo_idx])
-        draw_title("Precipitation Month {}\nRain=Orange, Snow=Blue".format(mo_idx + 1), img)
+        draw_title(
+            "Precipitation Month {}\nRain=Orange, Snow=Blue".format(mo_idx + 1), img
+        )
 
         img.save("precipitation_video/month_{}.png".format(mo_idx))
     os.system(
@@ -50,3 +52,7 @@ def precipitation_by_month_video(**kwargs):
         "-vf 'scale=1920:1080' "
         "-c:v libx264 -r 30 -pix_fmt yuv420p precipitation_video/precipitation_video.mp4"
     )
+
+
+if __name__ == "__main__":
+    precipitation_by_month_video()
