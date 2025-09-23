@@ -1,3 +1,5 @@
+from datetime import datetime
+import multiprocessing
 import ee
 
 import numpy as np
@@ -19,7 +21,9 @@ rain_snow_expressions = {
     multiprocess_safe=True,
 )
 def compute_precipitation_for_month(rain_or_snow, start_date, end_date):
-    print(f"Precipitation {rain_or_snow} from {start_date} to {end_date}")
+    print(
+        f"{datetime.now()} Precipitation {rain_or_snow} from {start_date} to {end_date}"
+    )
     ee.Initialize()
     era5 = ee.ImageCollection("ECMWF/ERA5/HOURLY")
     collection = era5.filter(ee.Filter.date(ee.Date(start_date), ee.Date(end_date)))
@@ -32,12 +36,14 @@ def compute_precipitation_for_month(rain_or_snow, start_date, end_date):
             },
         )
     )
-    return download_ee_image(
-        collection.sum(), rain_or_snow, resolution=0.25, degree_size=45
+    result = download_ee_image(
+        collection.sum(), rain_or_snow, resolution=0.25, degree_size=45, pbar=False
     )
+    print(f"{datetime.now()} Done {rain_or_snow} from {start_date} to {end_date}")
+    return result
 
 
-def compute_precipitation(date_end=date_end_str):
+def compute_all_months(date_end):
     dates = [
         f"{year}-{month:02d}-01"
         for year in range(1990, 2021, 1)
@@ -50,9 +56,19 @@ def compute_precipitation(date_end=date_end_str):
         dates[-1],
         date_end,
     )
+    all_months = zip(dates[:-1], dates[1:])
+    return all_months
+
+
+@permacache(
+    "weather-agg-ee/precipitation/compute_precipitation",
+    multiprocess_safe=True,
+)
+def compute_precipitation(date_end=date_end_str):
+    all_months = compute_all_months(date_end)
     snow_total = [0] * 12
     rain_total = [0] * 12
-    for start, end in zip(dates[:-1], dates[1:]):
+    for start, end in all_months:
         _, month, _ = start.split("-")
         month_idx = int(month) - 1
         snow_total[month_idx] += compute_precipitation_for_month("snow", start, end)
@@ -60,5 +76,19 @@ def compute_precipitation(date_end=date_end_str):
     return {"snow": np.array(snow_total), "rain": np.array(rain_total)}
 
 
+def compute_precipitation_for_month_for_parallel(rain_or_snow, start_date, end_date):
+    return compute_precipitation_for_month(rain_or_snow, start_date, end_date)
+
+
+def populate_caches():
+    parameters = [
+        (ros, start, end)
+        for start, end in compute_all_months(date_end_str)
+        for ros in ["rain", "snow"]
+    ]
+    with multiprocessing.Pool(8) as pool:
+        list(pool.starmap(compute_precipitation_for_month_for_parallel, parameters))
+
+
 if __name__ == "__main__":
-    compute_precipitation()
+    populate_caches()
