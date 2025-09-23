@@ -215,6 +215,7 @@ def download_ee_image(
     band_name: str = "mean_daily_max_temperature_celsius",
     resolution=0.25,
     degree_size=45,
+    pbar=True,
 ):
     """Download mean daily maximum temperature data in tiles and merge.
 
@@ -231,7 +232,7 @@ def download_ee_image(
 
     # Download each tile
     tile_data = []
-    for bounds in tqdm.tqdm(tiles):
+    for bounds in tqdm.tqdm(tiles) if pbar else tiles:
         tile_temp_data = download_quadrant(bounds, ee_data, band_name, resolution)
         tile_data.append(tile_temp_data)
 
