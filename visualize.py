@@ -1,8 +1,9 @@
 import os
 import shutil
-from PIL import Image
+
 import matplotlib
 import numpy as np
+from PIL import Image
 
 from all_stats import draw_title
 from precipitation import compute_precipitation

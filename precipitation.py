@@ -1,13 +1,12 @@
-from datetime import datetime
 import multiprocessing
-import ee
+from datetime import datetime
 
+import ee
 import numpy as np
 from permacache import permacache
 
+from constants import date_end_str, date_start_str
 from download import download_ee_image
-
-from constants import date_start_str, date_end_str
 from mean_daily_stats import decrement
 
 rain_snow_expressions = {

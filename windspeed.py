@@ -1,6 +1,6 @@
 import ee
-
 from permacache import permacache
+
 from download import download_ee_image
 from sample import sampled_values
 

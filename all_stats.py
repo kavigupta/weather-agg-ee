@@ -1,15 +1,15 @@
 import os
 import shutil
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+
 import matplotlib as mpl
+import numpy as np
 import tqdm
+from PIL import Image, ImageDraw, ImageFont
 
 from cloud_cover import compute_cloud_segment_overall
 from mean_daily_stats import temperature_stats_dict
 from precipitation import precipitation_stats_dict
 from windspeed import high_wind_days
-
 
 output_folder = "output"
 images_folder = "images"

@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 import ee
-from mean_daily_stats import decrement
 from permacache import drop_if_equal, permacache
 
 from constants import date_end_str, date_start_str
 from download import download_ee_image
+from mean_daily_stats import decrement
 
 # def high_temp_over_90f():
 #     ee.Initialize()
@@ -37,6 +37,7 @@ def cloud_cover_for_segment(date_start_str, date_end_str):
         )
     )
     return download_ee_image(day.mean(), "sun", resolution=0.25, degree_size=45)
+
 
 @permacache(
     "weather-agg-ee/cloud_cover/cloud_cover_segment_overall",
