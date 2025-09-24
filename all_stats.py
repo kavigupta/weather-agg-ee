@@ -18,7 +18,7 @@ images_folder = "images"
 def all_stats():
     return {
         "sunniness": (compute_cloud_segment_overall(), "%"),
-        "windspeed_over_10mph": (high_wind_days(), "%"),
+        # "windspeed_over_10mph": (high_wind_days(), "%"),
         **precipitation_stats_dict(),
         **temperature_stats_dict(),
     }
@@ -80,6 +80,7 @@ def main():
     shutil.rmtree(images_folder, ignore_errors=True)
     stats = all_stats()
     for statname, (stat, unit) in tqdm.tqdm(stats.items()):
+        assert stat.shape == (180 * 4, 360 * 4), f"Unexpected shape for {statname}: {stat.shape}"
         save_to_npz(statname, stat)
         save_image(statname, stat, unit)
     run_ffmpeg_monthly()

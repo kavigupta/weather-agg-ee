@@ -8,7 +8,7 @@ from download import download_ee_image
 from sample import compute_date_strs
 
 
-@permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date_4", multiprocess_safe=True)
+@permacache("weather-agg-ee/dewpoint/high_dewpoint_for_date_5", multiprocess_safe=True)
 def high_dewpoint_for_date(date_str):
     start = datetime.now()
     print(f"{start} - Start {date_str}")
@@ -22,7 +22,7 @@ def high_dewpoint_for_date(date_str):
         day_collection.max(),
         "dewpoint_temperature_2m",
         resolution=0.25,
-        degree_size=60,
+        degree_size=45,
         pbar=False,
     )
     end = datetime.now()

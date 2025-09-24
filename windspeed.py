@@ -11,7 +11,7 @@ ten_mph_in_mps = 4.4704
 
 
 @permacache(
-    "weather-agg-ee/wind_speed/mean_wind_speed_for_date_3", multiprocess_safe=True
+    "weather-agg-ee/wind_speed/mean_wind_speed_for_date_4", multiprocess_safe=True
 )
 def mean_wind_speed_for_date(date_str):
     start = datetime.now()
@@ -32,14 +32,14 @@ def mean_wind_speed_for_date(date_str):
         )
     )
     result = download_ee_image(
-        day_collection.mean(), "wind_speed", resolution=0.25, degree_size=60, pbar=False
+        day_collection.mean(), "wind_speed", resolution=0.25, degree_size=45, pbar=False
     )
     end = datetime.now()
     print(f"{end} - Finished {date_str}; took {end - start}")
     return result
 
 
-@permacache("weather-agg-ee/wind_speed/high_wind_dates_2", multiprocess_safe=True)
+@permacache("weather-agg-ee/wind_speed/high_wind_dates_3", multiprocess_safe=True)
 def mean_high_wind_dates(count):
     sum_vals = sum(
         value > ten_mph_in_mps
