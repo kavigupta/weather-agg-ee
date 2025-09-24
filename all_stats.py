@@ -18,7 +18,7 @@ images_folder = "images"
 def all_stats():
     return {
         "sunniness": (compute_cloud_segment_overall(), "%"),
-        # "windspeed_over_10mph": (high_wind_days(), "%"),
+        "windspeed_over_10mph": (high_wind_days(), "%"),
         **precipitation_stats_dict(),
         **temperature_stats_dict(),
     }
