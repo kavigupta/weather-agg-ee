@@ -7,7 +7,7 @@ from constants import date_end_str, date_start_str
 
 
 def sampled_values(fn, num_samples, quiet=True):
-    date_strs = compute_date_strs()
+    date_strs = compute_date_strs()[:num_samples]
 
     for i, date_str in enumerate(tqdm.tqdm(date_strs)):
         if not quiet:
