@@ -29,6 +29,7 @@ def high_dewpoint_for_date(date_str):
     print(f"{end} - Finished {date_str}; took {end - start}")
     return result
 
+
 def high_dewpoint_for_date_for_parallel(date_str):
     return high_dewpoint_for_date(date_str)
 
