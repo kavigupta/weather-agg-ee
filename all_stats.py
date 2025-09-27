@@ -7,6 +7,7 @@ import tqdm
 from PIL import Image, ImageDraw, ImageFont
 
 from cloud_cover import compute_cloud_segment_overall
+from dewpoint import aggregated_humidity_related_values
 from mean_daily_stats import temperature_stats_dict
 from precipitation import precipitation_stats_dict
 from windspeed import high_wind_days
@@ -19,6 +20,7 @@ def all_stats():
     return {
         "sunniness": (compute_cloud_segment_overall(), "%"),
         "windspeed_over_10mph": (high_wind_days(), "%"),
+        **aggregated_humidity_related_values(),
         **precipitation_stats_dict(),
         **temperature_stats_dict(),
     }
