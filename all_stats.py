@@ -80,7 +80,10 @@ def main():
     shutil.rmtree(images_folder, ignore_errors=True)
     stats = all_stats()
     for statname, (stat, unit) in tqdm.tqdm(stats.items()):
-        assert stat.shape == (180 * 4, 360 * 4), f"Unexpected shape for {statname}: {stat.shape}"
+        assert stat.shape == (
+            180 * 4,
+            360 * 4,
+        ), f"Unexpected shape for {statname}: {stat.shape}"
         save_to_npz(statname, stat)
         save_image(statname, stat, unit)
     run_ffmpeg_monthly()
