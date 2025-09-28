@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -81,6 +82,8 @@ def main():
     shutil.rmtree(output_folder, ignore_errors=True)
     shutil.rmtree(images_folder, ignore_errors=True)
     stats = all_stats()
+    with open("stats_listing.json", "w") as f:
+        json.dump(list(stats), f, indent=2)
     for statname, (stat, unit) in tqdm.tqdm(stats.items()):
         assert stat.shape == (
             180 * 4,
